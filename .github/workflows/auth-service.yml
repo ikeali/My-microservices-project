@@ -2,8 +2,12 @@ name: Auth Service CI/CD
 
 on:
   push:
+    branches:
+      - main
+      - feature/**
     paths:
       - 'auth-service/**'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
