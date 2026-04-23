@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  auth-db:
+    image: postgres:15
+    environment:
+      # POSTGRES_DB: auth_db
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+
+  auth-service:
+    build: .
+    ports:
+      - "8001:8000"
+    depends_on:
+      - auth-db
+    env_file:
+      - .env
+
+networks:
+  default:
+    external:
+      name: microservices-net

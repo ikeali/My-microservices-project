@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  product-db:
+    image: postgres:15
+    environment:
+      # POSTGRES_DB: product_db
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5435:5432"
+
+  product-service:
+    build: .
+    ports:
+      - "8003:8000"
+    depends_on:
+      - product-db
+    env_file:
+      - .env
+
+networks:
+  default:
+    external:
+      name: microservices-net

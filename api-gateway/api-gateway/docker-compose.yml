@@ -1,0 +1,27 @@
+# services:
+#   api-gateway:
+#     build: .
+#     ports:
+#       - "8000:80"
+
+# networks:
+#   default:
+#     name: microservices-net
+#     external: true
+
+services:
+  api-gateway:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      
+    # networks:
+    #   - microservices-net
+
+    
+networks:
+  default:
+    name: microservices-net
+    external: true

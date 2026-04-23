@@ -1,0 +1,23 @@
+services:
+  user-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5434:5432"
+
+  user-service:
+    build: .
+    ports:
+      - "8002:8000"
+    depends_on:
+      - user-db
+    env_file:
+      - .env
+
+networks:
+  default:
+    name: microservices-net
+    external: true
