@@ -2,8 +2,12 @@ name: API Gateway CI/CD
 
 on:
   push:
+    branches:
+      - main
+      - feature/**
     paths:
       - 'api-gateway/**'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -15,13 +19,15 @@ jobs:
       IMAGE_NAME: api-gateway
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
         run: |
@@ -29,7 +35,7 @@ jobs:
           docker login --username AWS --password-stdin \
           $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      - name: Build Image
+      - name: Build Docker Image
         run: |
           docker build -t $IMAGE_NAME ./api-gateway
 
@@ -39,6 +45,6 @@ jobs:
           docker tag $IMAGE_NAME:latest $IMAGE_URI
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      - name: Push Image
+      - name: Push Image to ECR
         run: |
           docker push $IMAGE_URI
