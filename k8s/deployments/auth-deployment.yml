@@ -16,13 +16,13 @@ spec:
         - operator: "Exists"
       containers:
         - name: auth-service
-          image: 851759420144.dkr.ecr.us-east-2.amazonaws.com/auth-service:ad36358bc1b7b17ab7c9c986910e49926318d405
+          image: 851759420144.dkr.ecr.us-east-2.amazonaws.com/auth-service:07903f24e7764c0a35594b665b01833ad55c364c
           ports:
             - containerPort: 8000
           env:
 
           - name: USER_SERVICE_URL
-            value: http://user-service:80
+            value: http://user-service:8002
           - name: JWT_SIGNING_KEY
             valueFrom:
               secretKeyRef:
