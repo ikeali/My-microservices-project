@@ -16,7 +16,7 @@ spec:
         - operator: "Exists"
       containers:
         - name: auth-service
-          image: 851759420144.dkr.ecr.us-east-2.amazonaws.com/auth-service:07903f24e7764c0a35594b665b01833ad55c364c
+          image: 851759420144.dkr.ecr.us-east-2.amazonaws.com/auth-service:6835b997e1e8c64a7721fc56e01e4a49a1a1e6e8
           ports:
             - containerPort: 8000
           env:
