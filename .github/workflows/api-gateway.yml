@@ -46,7 +46,7 @@ jobs:
       - name: Build Docker Image
         run: |
           # docker build -t $IMAGE_NAME ./api-gateway
-          docker build -t ghcr.io/ikeali/api-gateway:latest ./api-gateway
+          docker build -t ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }} ./api-gateway
 
       # - name: Tag Image
       #   run: |
@@ -57,4 +57,4 @@ jobs:
       # - name: Push Image to ECR
       - name: Push Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/api-gateway:latest
+          docker push ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }}
