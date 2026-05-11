@@ -46,7 +46,7 @@ jobs:
       - name: Build Docker Image
         run: |
           # docker build -t $IMAGE_NAME ./api-gateway
-          docker build -t ghcr.io/${{ github.actor }}/api-gateway:latest .
+          docker build -t ghcr.io/ikeali/api-gateway:latest ./api-gateway
 
       # - name: Tag Image
       #   run: |
