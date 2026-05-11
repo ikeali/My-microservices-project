@@ -1,4 +1,9 @@
-name: Auth Service CI/CD
+name: AUTH SERVICE CI/CD
+
+
+permissions:
+  contents: read
+  packages: write
 
 on:
   push:
@@ -13,38 +18,43 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      IMAGE_NAME: auth-service
+    # env:
+    #   AWS_REGION: ${{ secrets.AWS_REGION }}
+    #   ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+    #   IMAGE_NAME: auth-service
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      # - name: Configure AWS Credentials
+      - name: Login to GHCR
+        run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        
+        # uses: aws-actions/configure-aws-credentials@v2
+        # with:
+        #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        #   aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to ECR
-        run: |
-          aws ecr get-login-password --region $AWS_REGION | \
-          docker login --username AWS --password-stdin \
-          $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      # - name: Login to ECR
+      #   run: |
+      #     aws ecr get-login-password --region $AWS_REGION | \
+      #     docker login --username AWS --password-stdin \
+      #     $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
       - name: Build Docker Image
         run: |
-          docker build -t $IMAGE_NAME ./auth-service
+          # docker build -t $IMAGE_NAME ./auth-service
+          docker build -t ghcr.io/${{ github.actor }}/auth-service:${{ github.sha }} ./auth-service
 
-      - name: Tag Image
-        run: |
-          IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
-          docker tag $IMAGE_NAME:latest $IMAGE_URI
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+      # - name: Tag Image
+      #   run: |
+      #     IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
+      #     docker tag $IMAGE_NAME:latest $IMAGE_URI
+      #     echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      - name: Push Image to ECR
+      # - name: Push Image to ECR
+      - name: Push Image
         run: |
-          docker push $IMAGE_URI
+          docker push ghcr.io/${{ github.actor }}/auth-service:${{ github.sha }}
