@@ -1,14 +1,3 @@
-# services:
-#   api-gateway:
-#     build: .
-#     ports:
-#       - "8000:80"
-
-# networks:
-#   default:
-#     name: microservices-net
-#     external: true
-
 services:
   api-gateway:
     image: nginx:latest
