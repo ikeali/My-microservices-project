@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-@zbo+62mydjl=vbu0&sg*r8#-*vr4+tw%aft25%of+7#i_&$-b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["product-service", 'localhost', '*']
+ALLOWED_HOSTS = ["product-service", 'localhost:5000']
 
 
 # Application definition
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5000",
+    "http://localhost:5000","product-service"
 ]
 
 
