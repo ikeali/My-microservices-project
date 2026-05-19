@@ -1,0 +1,6 @@
+apiVersion: v2
+name: product-postgres
+description: PostgreSQL database for product-service
+type: application
+version: 0.1.0
+appVersion: "15"

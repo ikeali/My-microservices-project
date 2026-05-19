@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/ikeali/auth-service
+  tag: 77e98f42631ded8cf82dbfc91229d9c3749206bf
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+containerPort: 8000
+
+tolerations:
+  - operator: Exists
+
+env:
+  USER_SERVICE_URL: "http://user-service:8002"
+
+database:
+  host: auth-postgres
+  port: "5432"
+
+secrets:
+  jwtSecretName: jwt-secret
+  authDbSecretName: auth-db-secret

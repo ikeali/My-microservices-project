@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/ikeali/product-service
+  tag: c827de2a3d370ad27622e0754b76fa656d98f4ac
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+containerPort: 8000
+
+tolerations:
+  - operator: Exists
+
+env:
+  USER_SERVICE_URL: "http://user-service:8002"
+
+database:
+  host: product-postgres
+  port: "5432"
+
+secrets:
+  jwtSecretName: jwt-secret
+  productDbSecretName: product-db-secret

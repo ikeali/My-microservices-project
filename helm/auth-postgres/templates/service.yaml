@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: auth-postgres
+
+spec:
+  type: {{ .Values.service.type }}
+
+  selector:
+    app: auth-postgres
+
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 5432
