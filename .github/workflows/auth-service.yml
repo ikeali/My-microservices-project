@@ -2,7 +2,7 @@ name: AUTH SERVICE CI/CD
 
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 on:
@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Configure AWS Credentials
       - name: Login to GHCR

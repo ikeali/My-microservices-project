@@ -1,8 +1,8 @@
-name: API Gateway CI/CD
+name: API GATEWAY CI/CD
 
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 on:
@@ -12,10 +12,13 @@ on:
       - feature/**
     paths:
       - 'api-gateway/**'
+      - '.github/workflows/api-gateway.yml'
+
   workflow_dispatch:
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     # env:
@@ -26,6 +29,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Configure AWS Credentials
       - name: Login to GHCR
@@ -58,3 +63,21 @@ jobs:
       - name: Push Image
         run: |
           docker push ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }}
+
+      - name: Update Helm Chart Image Tag
+        run: |
+          sed -i 's/tag:.*/tag: "${{ github.sha }}"/' helm/api-gateway/values.yaml
+
+      - name: Commit Updated Helm Values
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+
+          git add helm/api-gateway/values.yaml
+
+          git commit -m "Update api-gateway image tag to ${{ github.sha }}" \
+          || echo "No changes to commit"
+
+      - name: Push Changes
+        run: |
+          git push
