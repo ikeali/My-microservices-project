@@ -9,7 +9,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/ikeali/microservices-devops-project.git
+    repoURL: https://github.com/ikeali/My-microservices-project.git
     targetRevision: feature/devops/auth-service-cicd
     path: helm/auth-postgres
 
