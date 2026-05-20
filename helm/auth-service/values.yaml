@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ghcr.io/ikeali/auth-service
-  tag: "806b0aabd8bb465ef98f7280693d45561ea779ba"
+  tag: "b778d967584cf8308b97b189056370f0217c50ca"
   pullPolicy: Always
 
 service:
