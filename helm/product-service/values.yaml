@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ghcr.io/ikeali/product-service
-  tag: "09426d5728f059e7e1ea871656daeb75136c0b41"
+  tag: "defc264014061b5b0c557fef52e04e75b97aae18"
   pullPolicy: Always
 
 service:
