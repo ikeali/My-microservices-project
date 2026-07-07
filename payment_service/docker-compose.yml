@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  payment-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5438:5432"
+
+  payment-service:
+    build: .
+    ports:
+      - "8006:8000"
+    depends_on:
+      - payment-db
+    env_file:
+      - .env
+
+networks:
+  default:
+    external:
+      name: microservices-net
