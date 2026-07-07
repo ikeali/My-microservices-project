@@ -1,3 +1,7 @@
-FROM nginx:latest
+FROM nginx:alpine
 
-COPY nginx.conf /etc/nginx/nginx.conf
+# Install curl
+RUN apk add --no-cache curl
+
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
