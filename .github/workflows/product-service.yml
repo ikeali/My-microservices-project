@@ -11,7 +11,7 @@ on:
       - main
       - feature/**
     paths:
-      - 'product-service/**'
+      - 'product_service/**'
   workflow_dispatch:
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
       - name: Build Docker Image
         run: |
           # docker build -t $IMAGE_NAME ./product-service
-          docker build -t ghcr.io/${{ github.actor }}/product-service:${{ github.sha }} ./product-service
+          docker build -t ghcr.io/${{ github.actor }}/product_service:${{ github.sha }} ./product_service
 
       # - name: Tag Image
       #   run: |
@@ -57,4 +57,4 @@ jobs:
       # - name: Push Image to ECR
       - name: Push Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/product-service:${{ github.sha }}
+          docker push ghcr.io/${{ github.actor }}/product_service:${{ github.sha }}

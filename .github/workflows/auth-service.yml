@@ -11,7 +11,7 @@ on:
       - main
       - feature/**
     paths:
-      - 'auth-service/**'
+      - 'auth_service/**'
   workflow_dispatch:
 
 jobs:
@@ -45,8 +45,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          # docker build -t $IMAGE_NAME ./auth-service
-          docker build -t ghcr.io/${{ github.actor }}/auth-service:${{ github.sha }} ./auth-service
+          # docker build -t $IMAGE_NAME ./auth_service
+          docker build -t ghcr.io/${{ github.actor }}/auth_service:${{ github.sha }} ./auth_service
 
       # - name: Tag Image
       #   run: |
@@ -57,4 +57,4 @@ jobs:
       # - name: Push Image to ECR
       - name: Push Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/auth-service:${{ github.sha }}
+          docker push ghcr.io/${{ github.actor }}/auth_service:${{ github.sha }}

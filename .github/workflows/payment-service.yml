@@ -11,7 +11,7 @@ on:
       - main
       - feature/**
     paths:
-      - 'payment-service/**'
+      - 'payment_service/**'
   workflow_dispatch:
 
 jobs:
@@ -27,8 +27,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.actor }}/payment-service:${{ github.sha }} ./payment-service
+          docker build -t ghcr.io/${{ github.actor }}/payment_service:${{ github.sha }} ./payment_service
 
       - name: Push Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/payment-service:${{ github.sha }}
+          docker push ghcr.io/${{ github.actor }}/payment_service:${{ github.sha }}
