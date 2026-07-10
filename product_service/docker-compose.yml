@@ -11,8 +11,12 @@ services:
     ports:
       - "5435:5432"
 
+    volumes:
+    - product_db_data:/var/lib/postgresql/data
+
   product-service:
     build: .
+    image: product-service:latest
     ports:
       - "8003:8000"
     depends_on:
@@ -20,6 +24,9 @@ services:
     env_file:
       - .env
 
+volumes:
+  product_db_data:
+  
 networks:
   default:
     external:

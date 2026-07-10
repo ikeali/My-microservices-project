@@ -10,6 +10,9 @@ services:
     ports:
       - "5436:5432"
 
+    volumes:
+      - cart_db_data:/var/lib/postgresql/data
+
   cart-service:
     build: .
     ports:
@@ -18,6 +21,9 @@ services:
       - cart-db
     env_file:
       - .env
+
+volumes:
+  cart_db_data:
 
 networks:
   default:

@@ -1,8 +1,43 @@
+# name: ORDER SERVICE CI/CD
+
+
+# permissions:
+#   contents: read
+#   packages: write
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - feature/**
+#     paths:
+#       - 'order_service/**'
+#   workflow_dispatch:
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Login to GHCR
+#         run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+#       - name: Build Docker Image
+#         run: |
+#           docker build -t ghcr.io/${{ github.actor }}/order_service:${{ github.sha }} ./order_service
+
+#       - name: Push Image
+#         run: |
+#           docker push ghcr.io/${{ github.actor }}/order_service:${{ github.sha }}
+
+
 name: ORDER SERVICE CI/CD
 
-
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 on:
@@ -11,24 +46,65 @@ on:
       - main
       - feature/**
     paths:
-      - 'order_service/**'
+      - "order_service/**"
+      - ".github/workflows/order-service.yml"
   workflow_dispatch:
+
+concurrency:
+  group: order-service
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Login to GHCR
-        run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.actor }}/order_service:${{ github.sha }} ./order_service
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/order-service:${{ github.sha }} \
+            ./order_service
 
-      - name: Push Image
+      - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/order_service:${{ github.sha }}
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/order-service:${{ github.sha }}
+
+      - name: Clone GitOps Repository
+        run: |
+          git clone \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/ikeali/gitops-infra.git
+
+      - name: Update Helm Values
+        run: |
+          sed -i 's|tag:.*|tag: "${{ github.sha }}"|' \
+          gitops-infra/helm/order-service/values.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          cd gitops-infra
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add helm/order-service/values.yaml
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git commit -m "ci: update order-service image to ${{ github.sha }}"
+          git push origin main

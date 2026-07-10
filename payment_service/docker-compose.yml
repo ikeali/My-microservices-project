@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5438:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
 
   payment-service:
     build: .
@@ -23,3 +25,5 @@ networks:
   default:
     external:
       name: microservices-net
+volumes:
+  payment_db_data:

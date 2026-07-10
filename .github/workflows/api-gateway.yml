@@ -1,8 +1,69 @@
-name: API Gateway CI/CD
+# name: API Gateway CI/CD
 
+
+# permissions:
+#   contents: read
+#   packages: write
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - feature/**
+#     paths:
+#       - 'api-gateway/**'
+#   workflow_dispatch:
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     # env:
+#     #   AWS_REGION: ${{ secrets.AWS_REGION }}
+#     #   ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+#     #   IMAGE_NAME: api-gateway
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       # - name: Configure AWS Credentials
+#       - name: Login to GHCR
+#         run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        
+#         # uses: aws-actions/configure-aws-credentials@v2
+#         # with:
+#         #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         #   aws-region: ${{ env.AWS_REGION }}
+
+#       # - name: Login to ECR
+#       #   run: |
+#       #     aws ecr get-login-password --region $AWS_REGION | \
+#       #     docker login --username AWS --password-stdin \
+#       #     $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+#       - name: Build Docker Image
+#         run: |
+#           # docker build -t $IMAGE_NAME ./api-gateway
+#           docker build -t ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }} ./api-gateway
+
+#       # - name: Tag Image
+#       #   run: |
+#       #     IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
+#       #     docker tag $IMAGE_NAME:latest $IMAGE_URI
+#       #     echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+#       # - name: Push Image to ECR
+#       - name: Push Image
+#         run: |
+#           docker push ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }}
+
+
+name: API GATEWAY CI/CD
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 on:
@@ -11,50 +72,65 @@ on:
       - main
       - feature/**
     paths:
-      - 'api-gateway/**'
+      - "api-gateway/**"
+      - ".github/workflows/api-gateway.yml"
   workflow_dispatch:
+
+concurrency:
+  group: api-gateway
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
-    # env:
-    #   AWS_REGION: ${{ secrets.AWS_REGION }}
-    #   ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-    #   IMAGE_NAME: api-gateway
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # - name: Configure AWS Credentials
-      - name: Login to GHCR
-        run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        
-        # uses: aws-actions/configure-aws-credentials@v2
-        # with:
-        #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #   aws-region: ${{ env.AWS_REGION }}
-
-      # - name: Login to ECR
-      #   run: |
-      #     aws ecr get-login-password --region $AWS_REGION | \
-      #     docker login --username AWS --password-stdin \
-      #     $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
 
       - name: Build Docker Image
         run: |
-          # docker build -t $IMAGE_NAME ./api-gateway
-          docker build -t ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }} ./api-gateway
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/api-gateway:${{ github.sha }} \
+            ./api-gateway
 
-      # - name: Tag Image
-      #   run: |
-      #     IMAGE_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
-      #     docker tag $IMAGE_NAME:latest $IMAGE_URI
-      #     echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-
-      # - name: Push Image to ECR
-      - name: Push Image
+      - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/api-gateway:${{ github.sha }}
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/api-gateway:${{ github.sha }}
+
+      - name: Clone GitOps Repository
+        run: |
+          git clone \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/ikeali/gitops-infra.git
+
+      - name: Update Helm Values
+        run: |
+          sed -i 's|tag:.*|tag: "${{ github.sha }}"|' \
+          gitops-infra/helm/api-gateway/values.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          cd gitops-infra
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add helm/api-gateway/values.yaml
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git commit -m "ci: update api-gateway image to ${{ github.sha }}"
+          git push origin main

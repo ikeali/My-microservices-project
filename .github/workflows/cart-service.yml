@@ -1,8 +1,43 @@
+# name: CART SERVICE CI/CD
+
+
+# permissions:
+#   contents: read
+#   packages: write
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - feature/**
+#     paths:
+#       - 'cart_service/**'
+#   workflow_dispatch:
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Login to GHCR
+#         run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+#       - name: Build Docker Image
+#         run: |
+#           docker build -t ghcr.io/${{ github.actor }}/cart_service:${{ github.sha }} ./cart_service
+
+#       - name: Push Image
+#         run: |
+#           docker push ghcr.io/${{ github.actor }}/cart_service:${{ github.sha }}
+
+
 name: CART SERVICE CI/CD
 
-
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 on:
@@ -11,24 +46,65 @@ on:
       - main
       - feature/**
     paths:
-      - 'cart_service/**'
+      - "cart_service/**"
+      - ".github/workflows/cart-service.yml"
   workflow_dispatch:
+
+concurrency:
+  group: cart-service
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Login to GHCR
-        run: echo "${{secrets.GITHUB_TOKEN}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
 
       - name: Build Docker Image
         run: |
-          docker build -t ghcr.io/${{ github.actor }}/cart_service:${{ github.sha }} ./cart_service
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/cart-service:${{ github.sha }} \
+            ./cart_service
 
-      - name: Push Image
+      - name: Push Docker Image
         run: |
-          docker push ghcr.io/${{ github.actor }}/cart_service:${{ github.sha }}
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/cart-service:${{ github.sha }}
+
+      - name: Clone GitOps Repository
+        run: |
+          git clone \
+            https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/ikeali/gitops-infra.git
+
+      - name: Update Helm Values
+        run: |
+          sed -i 's|tag:.*|tag: "${{ github.sha }}"|' \
+          gitops-infra/helm/cart-service/values.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          cd gitops-infra
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add helm/cart-service/values.yaml
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git commit -m "ci: update cart-service image to ${{ github.sha }}"
+          git push origin main

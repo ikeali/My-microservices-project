@@ -9,9 +9,12 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5437:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
 
   order-service:
     build: .
+    
     ports:
       - "8005:8000"
     depends_on:
@@ -19,6 +22,9 @@ services:
     env_file:
       - .env
 
+volumes:
+  order_db_data:
+  
 networks:
   default:
     external:
