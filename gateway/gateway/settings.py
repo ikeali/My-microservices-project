@@ -61,6 +61,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+
 AUTH_SERVICE = config("AUTH_SERVICE", default="")
 PRODUCT_SERVICE = config("PRODUCT_SERVICE", default="")
 CART_SERVICE = config("CART_SERVICE", default="")
