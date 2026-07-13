@@ -34,7 +34,6 @@
 #           docker push ghcr.io/${{ github.actor }}/cart_service:${{ github.sha }}
 
 
-# name: CART SERVICE CI/CD
 name: CART SERVICE CI/CD
 
 permissions:
