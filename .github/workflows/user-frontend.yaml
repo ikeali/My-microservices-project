@@ -10,12 +10,8 @@ on:
       - main
       - feature/**
     paths:
-      - "src/**"
-      - "public/**"
-      - "package.json"
-      - "package-lock.json"
-      - "Dockerfile"
-      - ".github/workflows/user-frontend.yml"
+      - "user-frontend/**"
+      - ".github/workflows/user-frontend.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -43,7 +39,7 @@ jobs:
         run: |
           docker build \
             -t ghcr.io/${{ github.repository_owner }}/user-frontend:${{ github.sha }} \
-            .
+            ./user-frontend
 
       - name: Push Docker Image
         run: |
