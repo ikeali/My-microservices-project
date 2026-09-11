@@ -1,4 +1,4 @@
-name: FRONTEND SERVICE CI/CD
+name: USER-FRONTEND SERVICE CI/CD
 
 permissions:
   contents: write
@@ -11,11 +11,11 @@ on:
       - feature/**
     paths:
       - "user-frontend/**"
-      - ".github/workflows/user-frontend.yaml"
+      - ".github/workflows/user-frontend.yml"
   workflow_dispatch:
 
 concurrency:
-  group: frontend
+  group: user-frontend
   cancel-in-progress: true
 
 jobs:
